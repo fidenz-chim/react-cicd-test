@@ -12,6 +12,6 @@ jobs:
 
     steps:
       - uses: ./.github/actions/deploy@v1
-      - with: 
+        with: 
           branch: main
           remote_directory: /home/bitnami/apps/react-cicd-test/build
