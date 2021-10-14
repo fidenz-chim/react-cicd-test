@@ -1,0 +1,46 @@
+name: MasterCI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - stg
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build and Deploy
+
+    steps:
+      - name: Set env vars (prod)
+        if: endsWith(github.ref, '/main')
+        run: |
+          echo "REMOTE_FOLDER=/home/bitnami/apps/react-cicd-test/prod/build/" >> $GITHUB_ENV
+      - name: Set env vars (dev)
+        if: endsWith(github.ref, '/dev')
+        run: |
+          echo "REMOTE_FOLDER=/home/bitnami/apps/react-cicd-test/dev/build/" >> $GITHUB_ENV
+      - name: Set env vars (stg)
+        if: endsWith(github.ref, '/stg')
+        run: |
+          echo "REMOTE_FOLDER=/home/bitnami/apps/react-cicd-test/stg/build/" >> $GITHUB_ENV
+
+      - uses: actions/checkout@master
+
+      - name: Bucket actions
+        uses: actions/setup-node@v1
+        with:
+          node-version: 15
+      - run: npm i
+      - run: npm run build
+      
+      - name: Publish
+        uses: nogsantos/scp-deploy@master
+        with:
+          src: ./build/*
+          host: ${{ secrets.SSH_HOST }}
+          remote: ${{ env.REMOTE_FOLDER }}
+          port: ${{ secrets.SSH_PORT }}
+          user: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
