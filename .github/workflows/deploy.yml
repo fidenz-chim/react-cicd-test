@@ -1,4 +1,4 @@
-name: MasterCI
+name: BuildDeploy
 
 on:
   push:
